@@ -4,14 +4,30 @@ import hashlib
 # function
 class MD5:
     #initialize the string
-    def __init__(self,string):
-        self.string=string
+    def _init_(self):
+        self.result = None
+        self.length=None
     #encrypt a message between 0-9 letters
-    def encrypt(self):
-        result = hashlib.md5(self.string)
-        # printing the encrypted message byte value.
-        print("The byte encrypted message of hash is : ", end="")
-        print(result.hexdigest())
 
-md=MD5(b'01')
-md.encrypt()
+    def encrypt_comparer(self, word):
+        self.result = self.encrypt(word)
+        self.length = len(word)
+
+    @staticmethod
+    def encrypt(word): # self.result = word_encrypted
+        result = hashlib.md5(word)
+        # printing the encrypted message byte value.
+        #print("The byte encrypted message of hash is : ", end="")
+        #print(result.hexdigest())
+        return result
+
+    def decrypt(self): # self.word_encrypted is used, output is word
+        for i in range(10**self.length):
+            self.word=i.to_bytes(2, 'big')
+            print(self.word)
+            if self.encrypt(self.word)==self.result:
+                print(i)
+                return
+md=MD5()
+md.encrypt_comparer(b'01')
+md.decrypt()
