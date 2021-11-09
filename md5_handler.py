@@ -17,6 +17,12 @@ class  handler:
         self.client_socket.send(str(len_message).zfill(4).encode())
         self.client_socket.send(str(message).encode())
 
+    def send_done_message(self):
+        message = "Done"
+        len_message = len(message.encode())
+        self.client_socket.send(str(len_message).zfill(4).encode())
+        self.client_socket.send(str(message).encode())
+
     def recv_initial_encrypted_message(self):
         len_message = self.client_socket.recv(4)
         message=self.client_socket.recv(int(len_message.decode))
@@ -86,14 +92,23 @@ def main():
     print(md.encrypt(bla))
     md.create_encrypt_comparer(bla.zfill(word_len))
     start = 0
+    jump=0
+    initial_mes=handler(client_socket)
+    initial_mes.send_initial_message()#announce the server for beggining- ask for work
     while True:
         rlist, wlist, xlist = select.select([client_socket], [], [], 1)
         for server in rlist:
             start = int(server.recv(1024).decode())
-            s = md.decrypt(range(start, start + 10000))
+            jump = int(server.recv(1024).decode())#for example  start + 10000 jump=10000
+            s = md.decrypt(range(start, start + jump))
             if s != "":
+                initial_mes.send_done_message()#send to server that the client found
                 print(s)
-                break
+                ok=server.recv(1024).decode()#server say ok- work finished
+                if ok=="OK":
+                    break
+            else:
+                initial_mes.send_initial_message()#the client ask for more work
 
 
 print(__name__)
