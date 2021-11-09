@@ -43,9 +43,11 @@ class MD5:
 
     #encrypt a message between 0-9 letters
 
-    def encrypt_comparer(self, word):
+    def create_encrypt_comparer(self, word):
         self.result = self.encrypt(word)
         self.length = len(word)
+
+
 
     @staticmethod
     def encrypt(word): # self.result = word_encrypted
@@ -54,8 +56,13 @@ class MD5:
         #print("The byte encrypted message of hash is : ", end="")
         return result.hexdigest()
     # 10**self.length
-    def decrypt(self,start,to): # self.word_encrypted is used, output is word
-        for start in range(to):
+    def decrypt(self,range_obj):
+        """Convert a numeric family value to an IntEnum member.
+            self.word_encrypted is used, output is word
+            If it's not a known member, return the numeric value itself.
+            """
+        # self.word_encrypted is used, output is word
+        for start in range_obj:
             self.word=str(start).zfill(self.word_len)
             # print(self.word)
             guess = self.encrypt(self.word)
@@ -65,24 +72,28 @@ class MD5:
         return ""
 
 
-    def MySelect(self):
-
-
 def init_network():
     client_socket = socket.socket()
     client_socket.connect(("127.0.0.1", 5555))
     return client_socket
 
+
 def main():
     client_socket = init_network()
     word_len = 7
-    md=MD5(word_len,client_socket)
+    md = MD5(word_len, client_socket)
     bla = str(77)
     print(md.encrypt(bla))
-    md.encrypt_comparer(bla.zfill(word_len))
-    s = md.decrypt()
-    if s != "":
-        print(s)
+    md.create_encrypt_comparer(bla.zfill(word_len))
+    start = 0
+    while True:
+        rlist, wlist, xlist = select.select([client_socket], [], [], 1)
+        for server in rlist:
+            start = int(server.recv(1024).decode())
+            s = md.decrypt(range(start, start + 10000))
+            if s != "":
+                print(s)
+                break
 
 
 print(__name__)
