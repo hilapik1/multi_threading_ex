@@ -97,14 +97,14 @@ def main():
     initial_mes.send_initial_message()#announce the server for beggining- ask for work
     while True:
         rlist, wlist, xlist = select.select([client_socket], [], [], 1)
-        for server in rlist:
-            start = int(server.recv(1024).decode())
-            jump = int(server.recv(1024).decode())#for example  start + 10000 jump=10000
+        for sock in rlist:
+            start = int(sock.recv(1024).decode())
+            jump = int(sock.recv(1024).decode())#for example  start + 10000 jump=10000
             s = md.decrypt(range(start, start + jump))
             if s != "":
                 initial_mes.send_done_message()#send to server that the client found
                 print(s)
-                ok=server.recv(1024).decode()#server say ok- work finished
+                ok=sock.recv(1024).decode()#server say ok- work finished
                 if ok=="OK":
                     break #check how to say to all the clients to stop their work
             else:
