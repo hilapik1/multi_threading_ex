@@ -106,7 +106,7 @@ def main():
                 print(s)
                 ok=server.recv(1024).decode()#server say ok- work finished
                 if ok=="OK":
-                    break
+                    break #check how to say to all the clients to stop their work
             else:
                 initial_mes.send_initial_message()#the client ask for more work
 
