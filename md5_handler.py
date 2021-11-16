@@ -98,19 +98,32 @@ def main():
     while True:
         rlist, wlist, xlist = select.select([client_socket], [], [], 1)
         for sock in rlist:
-            start = int(sock.recv(1024).decode())
-            jump = int(sock.recv(1024).decode())#for example  start + 10000 jump=10000
-            s = md.decrypt(range(start, start + jump))
-            if s != "":
-                initial_mes.send_done_message()#send to server that the client found
-                print(s)
-                ok=sock.recv(1024).decode()#server say ok- work finished
-                if ok=="OK":
-                    break #check how to say to all the clients to stop their work
-            else:
-                initial_mes.send_initial_message()#the client ask for more work
-
-
+            length_msg = int(sock.recv(1024).decode())
+            data=sock.recv(length_msg)
+            while len(data)<length_msg:
+                data+=sock.recv(length_msg-len(data))
+            data=data.decode()
+            optional_msg=data[0:4]
+            if optional_msg=="Done":
+                sock.close()
+            if optional_msg == "Work":
+                optional_msg=data[5:]#work 2 10   optional_msg=2 10
+                message=optional_msg.split(" ")
+                start=message[0]#2
+                jump=message[1]#10
+                # start = int(sock.recv(1024).decode())
+                # jump = int(sock.recv(1024).decode())#for example  start + 10000 jump=10000
+                s = md.decrypt(range(start, start + jump))
+                if s != "":
+                    initial_mes.send_done_message()#send to server that the client found
+                    print(s)
+                    word_founded=s
+                    # break #check how to say to all the clients to stop their work
+                else:
+                    initial_mes.send_initial_message()#the client ask for more work
+    # for client_socket in rlist:
+    #     client_socket.close()
+    #     break
 print(__name__)
 if __name__ == "__main__":
     main()
