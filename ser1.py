@@ -7,11 +7,11 @@ from datetime import date
 MAX_MSG_LENGTH = 1024
 SERVER_PORT = 5555
 SERVER_IP = "0.0.0.0"
-
+MIN_NUM=0
+MAX_NUM=10000
 server_socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)  # TCP
 server_socket.bind((SERVER_IP, SERVER_PORT))
 server_socket.listen()
-print("Hi")
 
 
 class server:
@@ -53,65 +53,32 @@ class server:
                     print("New client joined! {} con {} ".format(client_address, connection))
                     self.clients_socket.append(connection)
                 else:
-                    length_mes = current_socket.recv(4)#.decode()
-                    if length_mes==b'':
+                    length_mes = current_socket.recv(1024)#.decode()
+                    if length_mes=="":
                         self.clients_socket.remove(current_socket)
                         # if clients_socket == []:
                         #     server_socket.close()
                     else:
                         length_mes=length_mes.decode()
-                        optional_msg = current_socket.recv(int(length_mes)).decode()
+                        optional_msg = current_socket.recv(1024).decode()
                         if optional_msg == "more work":
+                            msg="work "+str(MIN_NUM)+" "+str(MAX_NUM)
+                            len_msg=str(len(msg))
+                            current_socket.send(len_msg.encode())
+                            time.sleep(0.1)
+                            current_socket.send(msg.encode())
+                        elif optional_msg=="Done":
+                            msg = "Done"
+                            len_msg = str(len(msg))
+                            for socket in self.clients_socket:
+                                if(current_socket==socket):
+                                    continue
+                                socket.send(len_msg.encode())
+                                time.sleep(0.1)
+                                socket.send(msg.encode())
+                                self.clients_socket.remove(socket)
 
-                        elif type_message[0] == "message":
-                            if type_message[1] == "":
-                                print(" Connection closed ")
-                                self.clients_socket.remove(current_socket)
-                                self.AddrDict.pop(current_socket)
-                                current_socket.close()
-                            else:
-                                print(" {} >> {} ".format(self.AddrDict.get(current_socket), type_message[1]))
-                                TosendTo = self.clients_socket.copy()
-                                TosendTo.remove(current_socket)  # len = amount connected - 1
-                                print(type(type_message[1]))
-                                print(type_message[1])
-                                print(type(self.AddrDict.get(current_socket)))
-                                print(self.AddrDict.get(current_socket))
-                                time_cur=self.Calculate_Time()
-                                self.messages_to_send.append((TosendTo,time_cur +" "+ str(self.AddrDict.get(current_socket)) + ": " + type_message[1]))
-                        elif type_message[0] == "quit":
-                             self.clients_socket.remove(current_socket)
-                             # if clients_socket == []:
-                             #    server_socket.close()
-                        elif type_message[0] == "image":
-                            codelen= current_socket.recv(4)
-                            code_emoji=current_socket.recv(int(codelen))
-                            TosendTo1 = self.clients_socket.copy()
-                            TosendTo1.remove(current_socket)  # len = amount connected - 1
-                            for s in self.clients_socket:
-                                if s in wlist and s != current_socket:
-                                    # send image message prefix
-                                    s.send(str("image$"+code_emoji.decode()+"$"+str(self.AddrDict.get(current_socket))).encode())
-                                    t="image$"+code_emoji.decode()
-                                    f=str("image$"+code_emoji.decode()+"$"+str(self.AddrDict.get(current_socket))).encode()
-                                    print(f)
-                                    #print(t)
-                                    #time.slep(0.6)
-                                    # send image code length
-                                    #s.send(codelen)
-                                    # send image code
-                                    #s.send(code_emoji)
 
-            for message in self.messages_to_send:
-                (SocketsToSend, data) = message
-                for current_socket in SocketsToSend:
-                    if current_socket in wlist:
-                        current_socket.send("message$".encode())
-                        #time.sleep(0.6)
-                        current_socket.send(data.encode())
-                        SocketsToSend.remove(current_socket)
-                if not SocketsToSend:  # SocketToSend is empty
-                    self.messages_to_send.remove(message)
 
 
 def main():

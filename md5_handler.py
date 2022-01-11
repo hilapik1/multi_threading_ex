@@ -3,6 +3,9 @@ import select
 import socket
 # encoding 01 using md5 hash
 # function
+import time
+
+
 class  handler:
     def __init__(self, socket):
         self.client_socket = socket
@@ -15,12 +18,14 @@ class  handler:
         message="more work"
         len_message=len(message.encode())
         self.client_socket.send(str(len_message).zfill(4).encode())
+        time.sleep((0.1))
         self.client_socket.send(str(message).encode())
 
     def send_done_message(self):
         message = "Done"
         len_message = len(message.encode())
         self.client_socket.send(str(len_message).zfill(4).encode())
+        time.sleep(0.1)
         self.client_socket.send(str(message).encode())
 
     def recv_initial_encrypted_message(self):
@@ -104,19 +109,25 @@ def main():
                 data+=sock.recv(length_msg-len(data))
             data=data.decode()
             optional_msg=data[0:4]
+            print(optional_msg)
             if optional_msg=="Done":
                 sock.close()
-            if optional_msg == "Work":
+                exit(0)
+            if optional_msg == "work":
                 optional_msg=data[5:]#work 2 10   optional_msg=2 10
                 message=optional_msg.split(" ")
-                start=message[0]#2
-                jump=message[1]#10
+                start=int(message[0])#2
+                jump=int(message[1])#10
                 # start = int(sock.recv(1024).decode())
                 # jump = int(sock.recv(1024).decode())#for example  start + 10000 jump=10000
+                print(str(start)+" " + str(jump))
                 s = md.decrypt(range(start, start + jump))
                 if s != "":
                     initial_mes.send_done_message()#send to server that the client found
                     print(s)
+                    sock.close()
+                    exit(0)
+
                     word_founded=s
                     # break #check how to say to all the clients to stop their work
                 else:
